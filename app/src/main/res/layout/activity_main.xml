@@ -1,55 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1A1B2F"
-    android:padding="16dp">
+    android:background="#F8FAFC"
+    android:fitsSystemWindows="true"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
 
-    <!-- Zaglavlje sa dugmetom za Odjavu -->
+    <!-- Header sa centriranim naslovom -->
     <RelativeLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
         android:layout_marginBottom="16dp">
-
-        <Button
-            android:id="@+id/btnLogout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="Odjavi se"
-            android:textSize="12sp" />
-    </RelativeLayout>
-
-    <!-- Kartica sa Bodovima -->
-    <LinearLayout
-        android:id="@+id/cardPoints"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/headerLayout"
-        android:background="#29B6F6"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="20dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Mali Heroj Bodovi"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:layout_centerInParent="true"
+            android:text="ChoreHero"
+            android:textColor="#0F172A"
+            android:textSize="22sp"
             android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:backgroundTint="#E2E8F0"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="Odjavi se"
+            android:textColor="#475569"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <!-- Bedž sa bodovima -->
+    <LinearLayout
+        android:id="@+id/cardPoints"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headerLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_points_badge"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="28dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="10dp">
 
         <TextView
             android:id="@+id/tvTotalPoints"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="78 PTS"
+            android:text="12 PTS"
             android:textColor="#FFFFFF"
-            android:textSize="32sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTasksHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cardPoints"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="24dp"
+        android:text="Pregled zadataka"
+        android:textColor="#64748B"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <!-- Lista Zadataka -->
     <androidx.recyclerview.widget.RecyclerView
@@ -57,18 +87,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/fabAddTask"
-        android:layout_below="@id/cardPoints"
-        android:layout_marginTop="16dp" />
+        android:layout_below="@id/tvTasksHeader"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="80dp" />
 
-    <!-- Plus dugme za dodavanje -->
+    <!-- FAB Plus dugme -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddTask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="12dp"
         android:contentDescription="Dodaj zadatak"
-        android:src="@android:drawable/ic_input_add" />
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="#2EC4B6"
+        app:tint="#FFFFFF" />
 
 </RelativeLayout>

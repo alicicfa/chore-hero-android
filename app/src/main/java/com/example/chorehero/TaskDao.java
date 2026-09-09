@@ -10,19 +10,21 @@ import java.util.List;
 
 @Dao
 public interface TaskDao {
-
     @Insert
-    void insert(Task task);
+    void insertTask(Task task);
 
     @Update
-    void update(Task task);
+    void updateTask(Task task);
 
     @Delete
-    void delete(Task task);
+    void deleteTask(Task task);
 
-    @Query("SELECT * FROM tasks ORDER BY id DESC")
-    List<Task> getAllTasks();
+    @Query("SELECT * FROM tasks WHERE familyCode = :familyCode ORDER BY isCompleted ASC, id DESC")
+    List<Task> getTasksForFamily(String familyCode);
 
-    @Query("SELECT SUM(points) FROM tasks WHERE isCompleted = 1")
-    int getTotalPoints();
+    @Query("SELECT * FROM tasks WHERE childId = :childId ORDER BY isCompleted ASC, id DESC")
+    List<Task> getTasksForChild(int childId);
+
+    @Query("SELECT COALESCE(SUM(points), 0) FROM tasks WHERE childId = :childId AND isCompleted = 1")
+    int getPointsForChild(int childId);
 }

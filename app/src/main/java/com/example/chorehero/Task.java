@@ -5,34 +5,22 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "tasks")
 public class Task {
-
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    public int id;
 
-    private String title;
-    private String description;
-    private int points;
-    private boolean isCompleted;
+    public String title;
+    public String time;
+    public int points;
+    public boolean isCompleted;
+    public int childId;        // ID djeteta kome pripada zadatak
+    public String familyCode;  // Kod porodice
 
-    public Task(String title, String description, int points, boolean isCompleted) {
+    public Task(String title, String time, int points, boolean isCompleted, int childId, String familyCode) {
         this.title = title;
-        this.description = description;
+        this.time = time;
         this.points = points;
         this.isCompleted = isCompleted;
+        this.childId = childId;
+        this.familyCode = familyCode;
     }
-
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public int getPoints() { return points; }
-    public void setPoints(int points) { this.points = points; }
-
-    public boolean isCompleted() { return isCompleted; }
-    public void setCompleted(boolean completed) { isCompleted = completed; }
 }

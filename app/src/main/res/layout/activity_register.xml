@@ -89,6 +89,20 @@
             android:textColorHint="#757575"
             android:visibility="gone" />
 
+        <!-- Sekcija za Dijete (Porodični kod) -->
+        <EditText
+            android:id="@+id/etFamilyCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Unesite porodični kod (npr. HERO1234)"
+            android:importantForAutofill="no"
+            android:inputType="textCapCharacters"
+            android:padding="14dp"
+            android:textColor="#1A1A1A"
+            android:textColorHint="#757575"
+            android:visibility="visible" />
+
         <!-- Sekcija za Dijete (Izbor Avatara) -->
         <LinearLayout
             android:id="@+id/layoutAvatarSelection"

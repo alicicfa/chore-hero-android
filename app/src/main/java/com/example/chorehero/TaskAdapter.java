@@ -1,29 +1,40 @@
 package com.example.chorehero;
 
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
+
 import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
-    private List<Task> taskList;
-    private OnTaskClickListener listener;
-
     public interface OnTaskClickListener {
-        void OnTaskStatusChanged(Task task, boolean isChecked);
+        void onTaskClick(Task task);
+        void onCheckClick(Task task);
+        void onEditClick(Task task); // Dodata metoda za edit
+        void onDeleteClick(Task task);
     }
+
+    private List<Task> taskList;
+    private final OnTaskClickListener listener;
 
     public TaskAdapter(List<Task> taskList, OnTaskClickListener listener) {
         this.taskList = taskList;
         this.listener = listener;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.taskList = tasks;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -36,32 +47,40 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = taskList.get(position);
-        holder.tvTitle.setText(task.getTitle());
-        holder.tvDescription.setText(task.getDescription());
-        holder.tvPoints.setText("+" + task.getPoints() + " PTS");
 
-        // Sprečavamo triggerovanje listenera prilikom skrolovanja
-        holder.cbCompleted.setOnCheckedChangeListener(null);
-        holder.cbCompleted.setChecked(task.isCompleted());
+        holder.tvTitle.setText(task.title);
+        holder.tvTime.setText(task.time);
+        holder.tvPoints.setText("+" + task.points + "b");
 
-        // Efekat precrtavanja teksta ako je zadatak završen
-        if (task.isCompleted()) {
+        if (task.isCompleted) {
+            holder.btnCheck.setImageResource(R.drawable.ic_checkbox_on);
             holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            holder.tvTitle.setTextColor(Color.parseColor("#94A3B8"));
+
+            holder.cardTask.setAlpha(0.7f);
+            holder.cardTask.setCardBackgroundColor(Color.parseColor("#F1F5F9"));
+            holder.cardTask.setStrokeColor(Color.parseColor("#CBD5E1"));
+
+            holder.tvPoints.setTextColor(Color.parseColor("#64748B"));
+            holder.tvPoints.setBackgroundColor(Color.parseColor("#E2E8F0"));
         } else {
+            holder.btnCheck.setImageResource(R.drawable.ic_checkbox_off);
             holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            holder.tvTitle.setTextColor(Color.parseColor("#0F172A"));
+
+            holder.cardTask.setAlpha(1.0f);
+            holder.cardTask.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+            holder.cardTask.setStrokeColor(Color.parseColor("#2EC4B6"));
+
+            holder.tvPoints.setTextColor(Color.parseColor("#0D9488"));
+            holder.tvPoints.setBackgroundColor(Color.parseColor("#E6FFFA"));
         }
 
-        holder.cbCompleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            task.setCompleted(isChecked);
-            if (isChecked) {
-                holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            } else {
-                holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-            }
-            if (listener != null) {
-                listener.OnTaskStatusChanged(task, isChecked);
-            }
-        });
+        // Listeneri
+        holder.btnCheck.setOnClickListener(v -> listener.onCheckClick(task));
+        holder.btnEdit.setOnClickListener(v -> listener.onEditClick(task)); // Edit klik
+        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(task));
+        holder.itemView.setOnClickListener(v -> listener.onTaskClick(task));
     }
 
     @Override
@@ -69,21 +88,20 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return taskList != null ? taskList.size() : 0;
     }
 
-    public void setTasks(List<Task> tasks) {
-        this.taskList = tasks;
-        notifyDataSetChanged();
-    }
-
     static class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvDescription, tvPoints;
-        CheckBox cbCompleted;
+        MaterialCardView cardTask;
+        TextView tvTitle, tvPoints, tvTime;
+        ImageView btnCheck, btnEdit, btnDelete;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardTask = itemView.findViewById(R.id.cardTask);
+            btnCheck = itemView.findViewById(R.id.btnCheckTask);
             tvTitle = itemView.findViewById(R.id.tvTaskTitle);
-            tvDescription = itemView.findViewById(R.id.tvTaskDescription);
             tvPoints = itemView.findViewById(R.id.tvTaskPoints);
-            cbCompleted = itemView.findViewById(R.id.cbTaskCompleted);
+            tvTime = itemView.findViewById(R.id.tvTaskTime);
+            btnEdit = itemView.findViewById(R.id.btnEditTask);
+            btnDelete = itemView.findViewById(R.id.btnDeleteTask);
         }
     }
 }
