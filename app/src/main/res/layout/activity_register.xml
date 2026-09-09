@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fillViewport="true"
+    tools:ignore="HardcodedText,SpellCheckingInspection">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Dobrodošli u ChoreHero!"
+            android:textColor="#1A1A1A"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Kreirajte profil za nastavak"
+            android:textColor="#555555"
+            android:textSize="15sp" />
+
+        <!-- Izbor Uloge -->
+        <RadioGroup
+            android:id="@+id/rgRole"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rbKid"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="true"
+                android:text="Dijete"
+                android:textColor="#1A1A1A"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/rbParent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Roditelj"
+                android:textColor="#1A1A1A"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </RadioGroup>
+
+        <!-- Unos Imena -->
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="Unesite Ime / Nadimak"
+            android:importantForAutofill="no"
+            android:inputType="textPersonName"
+            android:padding="14dp"
+            android:textColor="#1A1A1A"
+            android:textColorHint="#757575" />
+
+        <!-- Sekcija za Roditelja (PIN) -->
+        <EditText
+            android:id="@+id/etPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Postavite PIN (min 4 cifre)"
+            android:importantForAutofill="no"
+            android:inputType="numberPassword"
+            android:maxLength="8"
+            android:padding="14dp"
+            android:textColor="#1A1A1A"
+            android:textColorHint="#757575"
+            android:visibility="gone" />
+
+        <!-- Sekcija za Dijete (Izbor Avatara) -->
+        <LinearLayout
+            android:id="@+id/layoutAvatarSelection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Izaberite svog Avatara:"
+                android:textColor="#1A1A1A"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <!-- Avatar Dječak -->
+                <ImageView
+                    android:id="@+id/ivAvatarBoy"
+                    android:layout_width="110dp"
+                    android:layout_height="110dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="#5E35B1"
+                    android:contentDescription="Boy Avatar"
+                    android:padding="6dp"
+                    android:src="@drawable/hero_boy" />
+
+                <!-- Avatar Djevojčica -->
+                <ImageView
+                    android:id="@+id/ivAvatarGirl"
+                    android:layout_width="110dp"
+                    android:layout_height="110dp"
+                    android:background="#E0E0E0"
+                    android:contentDescription="Girl Avatar"
+                    android:padding="6dp"
+                    android:src="@drawable/hero_girl" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Sačuvaj / Prijavi se -->
+        <Button
+            android:id="@+id/btnSaveProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:backgroundTint="#5E35B1"
+            android:padding="14dp"
+            android:text="Sačuvaj i Nastavi"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>
