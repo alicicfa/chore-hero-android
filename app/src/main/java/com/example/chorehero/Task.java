@@ -9,15 +9,15 @@ public class Task {
     public int id;
 
     public String title;
-    public String time;
+    public String dayOfWeek; // Umjesto vremena, sada čuvamo dan (npr. "Ponedjeljak")
     public int points;
     public boolean isCompleted;
     public int childId;        // ID djeteta kome pripada zadatak
     public String familyCode;  // Kod porodice
 
-    public Task(String title, String time, int points, boolean isCompleted, int childId, String familyCode) {
+    public Task(String title, String dayOfWeek, int points, boolean isCompleted, int childId, String familyCode) {
         this.title = title;
-        this.time = time;
+        this.dayOfWeek = dayOfWeek;
         this.points = points;
         this.isCompleted = isCompleted;
         this.childId = childId;

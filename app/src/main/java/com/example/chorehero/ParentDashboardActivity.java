@@ -6,9 +6,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,6 +37,8 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
     private int currentUserId = 1;
     private String familyCode = "HERO1234";
 
+    private final String[] daysOfWeek = {"Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +56,6 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
         drawerLayout = findViewById(R.id.drawerLayout);
         btnMenu = findViewById(R.id.btnMenu);
 
-        // Podešavanje menija (Sidebara)
         if (btnMenu != null && drawerLayout != null) {
             btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
         }
@@ -61,7 +64,7 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
 
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            adapter = new TaskAdapter(taskList, this, true); // true = roditeljski pogled
+            adapter = new TaskAdapter(taskList, this, true);
             recyclerView.setAdapter(adapter);
         }
 
@@ -92,7 +95,8 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
 
         if (menuWeekly != null) {
             menuWeekly.setOnClickListener(v -> {
-                Toast.makeText(this, "Sedmični pregled - U izradi!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(ParentDashboardActivity.this, WeeklyReviewActivity.class);
+                startActivity(intent);
                 if (drawerLayout != null) drawerLayout.closeDrawers();
             });
         }
@@ -131,12 +135,15 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
         builder.setView(dialogView);
 
         EditText etTitle = dialogView.findViewById(R.id.etDialogTitle);
-        EditText etTime = dialogView.findViewById(R.id.etDialogTime);
+        Spinner spinnerDays = dialogView.findViewById(R.id.spinnerDays);
         EditText etPoints = dialogView.findViewById(R.id.etDialogPoints);
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, daysOfWeek);
+        spinnerDays.setAdapter(spinnerAdapter);
 
         builder.setPositiveButton("Sačuvaj", (dialog, which) -> {
             String title = etTitle != null ? etTitle.getText().toString().trim() : "";
-            String time = etTime != null ? etTime.getText().toString().trim() : "20:00";
+            String selectedDay = spinnerDays.getSelectedItem().toString();
             String pointsStr = etPoints != null ? etPoints.getText().toString().trim() : "5";
 
             if (title.isEmpty()) {
@@ -149,11 +156,11 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
                 points = Integer.parseInt(pointsStr);
             } catch (NumberFormatException ignored) {}
 
-            Task newTask = new Task(title, time, points, false, currentUserId, familyCode);
+            Task newTask = new Task(title, selectedDay, points, false, currentUserId, familyCode);
             db.taskDao().insertTask(newTask);
 
             loadTasks();
-            Toast.makeText(this, "Zadatak dodan!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Zadatak dodan za " + selectedDay + "!", Toast.LENGTH_SHORT).show();
         });
 
         builder.setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss());
@@ -173,16 +180,27 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
         builder.setView(dialogView);
 
         EditText etTitle = dialogView.findViewById(R.id.etDialogTitle);
-        EditText etTime = dialogView.findViewById(R.id.etDialogTime);
+        Spinner spinnerDays = dialogView.findViewById(R.id.spinnerDays);
         EditText etPoints = dialogView.findViewById(R.id.etDialogPoints);
 
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, daysOfWeek);
+        spinnerDays.setAdapter(spinnerAdapter);
+
         if (etTitle != null) etTitle.setText(task.title);
-        if (etTime != null) etTime.setText(task.time);
         if (etPoints != null) etPoints.setText(String.valueOf(task.points));
+
+        if (task.dayOfWeek != null) {
+            for (int i = 0; i < daysOfWeek.length; i++) {
+                if (daysOfWeek[i].equals(task.dayOfWeek)) {
+                    spinnerDays.setSelection(i);
+                    break;
+                }
+            }
+        }
 
         builder.setPositiveButton("Izmjeni", (dialog, which) -> {
             String title = etTitle != null ? etTitle.getText().toString().trim() : task.title;
-            String time = etTime != null ? etTime.getText().toString().trim() : task.time;
+            String selectedDay = spinnerDays.getSelectedItem().toString();
             String pointsStr = etPoints != null ? etPoints.getText().toString().trim() : String.valueOf(task.points);
 
             if (title.isEmpty()) {
@@ -196,7 +214,7 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
             } catch (NumberFormatException ignored) {}
 
             task.title = title;
-            task.time = time;
+            task.dayOfWeek = selectedDay;
             task.points = points;
 
             db.taskDao().updateTask(task);

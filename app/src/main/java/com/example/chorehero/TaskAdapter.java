@@ -56,7 +56,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = taskList.get(position);
         if (holder.tvTitle != null) holder.tvTitle.setText(task.title);
-        if (holder.tvTime != null) holder.tvTime.setText(task.time);
+
+        // Prikaz dana u sedmici umjesto vremena
+        if (holder.tvTime != null) holder.tvTime.setText(task.dayOfWeek);
+
         if (holder.tvPoints != null) holder.tvPoints.setText("+" + task.points + "b");
 
         // Prikaz statusa zadatka i vizuelni efekti za završene/nezavršene zadatke

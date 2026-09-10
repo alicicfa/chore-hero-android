@@ -20,12 +20,19 @@
         android:layout_marginTop="16dp"
         android:hint="Naziv zadatka" />
 
-    <EditText
-        android:id="@+id/etDialogTime"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="Vrijeme (npr. 20:00)" />
+        android:layout_marginTop="12dp"
+        android:text="Izaberi dan u sedmici:"
+        android:textColor="#666666"
+        android:textSize="14sp" />
+
+    <Spinner
+        android:id="@+id/spinnerDays"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp" />
 
     <EditText
         android:id="@+id/etDialogPoints"
