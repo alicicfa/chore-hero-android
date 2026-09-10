@@ -8,9 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,6 +29,8 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
     private AppDatabase db;
     private Button btnLogout;
     private FloatingActionButton fabAddTask;
+    private DrawerLayout drawerLayout;
+    private ImageView btnMenu;
 
     private int currentUserId = 1;
     private String familyCode = "HERO1234";
@@ -39,17 +43,25 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
         db = AppDatabase.getInstance(this);
 
         SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
-        familyCode = prefs.getString("family_code", "HERO1234");
         currentUserId = prefs.getInt("user_id", 1);
+        familyCode = prefs.getString("family_code", "HERO1234");
 
-        recyclerView = findViewById(R.id.rvParentTasks);
-        btnLogout = findViewById(R.id.btnLogoutParent);
-        fabAddTask = findViewById(R.id.fabAddParentTask);
+        recyclerView = findViewById(R.id.rvTasks);
+        btnLogout = findViewById(R.id.btnLogout);
+        fabAddTask = findViewById(R.id.fabAddTask);
+        drawerLayout = findViewById(R.id.drawerLayout);
+        btnMenu = findViewById(R.id.btnMenu);
+
+        // Podešavanje menija (Sidebara)
+        if (btnMenu != null && drawerLayout != null) {
+            btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
+        }
+
+        setupMenuClicks();
 
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            // Ovdje proslijeđujemo 'true' da adapter zna da je ovo roditeljski ekran i da skloni kvačicu
-            adapter = new TaskAdapter(taskList, this, true);
+            adapter = new TaskAdapter(taskList, this, true); // true = roditeljski pogled
             recyclerView.setAdapter(adapter);
         }
 
@@ -69,6 +81,33 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
+            });
+        }
+    }
+
+    private void setupMenuClicks() {
+        View menuWeekly = findViewById(R.id.menuWeekly);
+        View menuRewards = findViewById(R.id.menuRewards);
+        View menuStats = findViewById(R.id.menuStats);
+
+        if (menuWeekly != null) {
+            menuWeekly.setOnClickListener(v -> {
+                Toast.makeText(this, "Sedmični pregled - U izradi!", Toast.LENGTH_SHORT).show();
+                if (drawerLayout != null) drawerLayout.closeDrawers();
+            });
+        }
+
+        if (menuRewards != null) {
+            menuRewards.setOnClickListener(v -> {
+                Toast.makeText(this, "Sistem nagrada - U izradi!", Toast.LENGTH_SHORT).show();
+                if (drawerLayout != null) drawerLayout.closeDrawers();
+            });
+        }
+
+        if (menuStats != null) {
+            menuStats.setOnClickListener(v -> {
+                Toast.makeText(this, "Statistika - U izradi!", Toast.LENGTH_SHORT).show();
+                if (drawerLayout != null) drawerLayout.closeDrawers();
             });
         }
     }
@@ -114,7 +153,7 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
             db.taskDao().insertTask(newTask);
 
             loadTasks();
-            Toast.makeText(this, "Zadatak dodan i poslan djeci!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Zadatak dodan!", Toast.LENGTH_SHORT).show();
         });
 
         builder.setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss());
@@ -122,13 +161,10 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
     }
 
     @Override
-    public void onTaskClick(Task task) {
-    }
+    public void onTaskClick(Task task) {}
 
     @Override
-    public void onCheckClick(Task task) {
-        // Roditelj nema mogućnost čekiranja, ova metoda se neće ni pozivati
-    }
+    public void onCheckClick(Task task) {}
 
     @Override
     public void onEditClick(Task task) {
