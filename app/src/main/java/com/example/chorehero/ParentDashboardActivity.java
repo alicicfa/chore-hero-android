@@ -1,31 +1,64 @@
 package com.example.chorehero;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class ParentDashboardActivity extends AppCompatActivity {
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-    private TextView tvWelcome;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ParentDashboardActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener {
+
+    private RecyclerView recyclerView;
+    private TaskAdapter adapter;
+    private List<Task> taskList = new ArrayList<>();
+    private AppDatabase db;
     private Button btnLogout;
+    private FloatingActionButton fabAddTask;
+
+    private int currentUserId = 1;
+    private String familyCode = "HERO1234";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Postavljamo layout za roditelja
         setContentView(R.layout.activity_parent_dashboard);
 
-        // Preuzimanje podataka iz SharedPreferences
-        SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
-        String parentName = prefs.getString("user_name", "Roditelj");
+        db = AppDatabase.getInstance(this);
 
-        btnLogout = findViewById(R.id.btnLogout);
+        SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
+        familyCode = prefs.getString("family_code", "HERO1234");
+        currentUserId = prefs.getInt("user_id", 1);
+
+        recyclerView = findViewById(R.id.rvParentTasks);
+        btnLogout = findViewById(R.id.btnLogoutParent);
+        fabAddTask = findViewById(R.id.fabAddParentTask);
+
+        if (recyclerView != null) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            // Ovdje proslijeđujemo 'true' da adapter zna da je ovo roditeljski ekran i da skloni kvačicu
+            adapter = new TaskAdapter(taskList, this, true);
+            recyclerView.setAdapter(adapter);
+        }
+
+        loadTasks();
+
+        if (fabAddTask != null) {
+            fabAddTask.setOnClickListener(v -> showAddTaskDialog());
+        }
+
         if (btnLogout != null) {
             btnLogout.setOnClickListener(v -> {
                 SharedPreferences.Editor editor = prefs.edit();
@@ -38,5 +71,118 @@ public class ParentDashboardActivity extends AppCompatActivity {
                 finish();
             });
         }
+    }
+
+    private void loadTasks() {
+        if (db != null && db.taskDao() != null) {
+            taskList.clear();
+            List<Task> fromDb = db.taskDao().getTasksForFamily(familyCode);
+            if (fromDb != null) {
+                taskList.addAll(fromDb);
+            }
+            if (adapter != null) {
+                adapter.setTasks(taskList);
+            }
+        }
+    }
+
+    private void showAddTaskDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null);
+        builder.setView(dialogView);
+
+        EditText etTitle = dialogView.findViewById(R.id.etDialogTitle);
+        EditText etTime = dialogView.findViewById(R.id.etDialogTime);
+        EditText etPoints = dialogView.findViewById(R.id.etDialogPoints);
+
+        builder.setPositiveButton("Sačuvaj", (dialog, which) -> {
+            String title = etTitle != null ? etTitle.getText().toString().trim() : "";
+            String time = etTime != null ? etTime.getText().toString().trim() : "20:00";
+            String pointsStr = etPoints != null ? etPoints.getText().toString().trim() : "5";
+
+            if (title.isEmpty()) {
+                Toast.makeText(this, "Unesite naziv zadatka!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int points = 5;
+            try {
+                points = Integer.parseInt(pointsStr);
+            } catch (NumberFormatException ignored) {}
+
+            Task newTask = new Task(title, time, points, false, currentUserId, familyCode);
+            db.taskDao().insertTask(newTask);
+
+            loadTasks();
+            Toast.makeText(this, "Zadatak dodan i poslan djeci!", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
+    @Override
+    public void onTaskClick(Task task) {
+    }
+
+    @Override
+    public void onCheckClick(Task task) {
+        // Roditelj nema mogućnost čekiranja, ova metoda se neće ni pozivati
+    }
+
+    @Override
+    public void onEditClick(Task task) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null);
+        builder.setView(dialogView);
+
+        EditText etTitle = dialogView.findViewById(R.id.etDialogTitle);
+        EditText etTime = dialogView.findViewById(R.id.etDialogTime);
+        EditText etPoints = dialogView.findViewById(R.id.etDialogPoints);
+
+        if (etTitle != null) etTitle.setText(task.title);
+        if (etTime != null) etTime.setText(task.time);
+        if (etPoints != null) etPoints.setText(String.valueOf(task.points));
+
+        builder.setPositiveButton("Izmjeni", (dialog, which) -> {
+            String title = etTitle != null ? etTitle.getText().toString().trim() : task.title;
+            String time = etTime != null ? etTime.getText().toString().trim() : task.time;
+            String pointsStr = etPoints != null ? etPoints.getText().toString().trim() : String.valueOf(task.points);
+
+            if (title.isEmpty()) {
+                Toast.makeText(this, "Naziv ne može biti prazan!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int points = task.points;
+            try {
+                points = Integer.parseInt(pointsStr);
+            } catch (NumberFormatException ignored) {}
+
+            task.title = title;
+            task.time = time;
+            task.points = points;
+
+            db.taskDao().updateTask(task);
+            loadTasks();
+            Toast.makeText(this, "Zadatak ažuriran!", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
+    @Override
+    public void onDeleteClick(Task task) {
+        new AlertDialog.Builder(this)
+                .setTitle("Brisanje zadatka")
+                .setMessage("Da li ste sigurni da želite obrisati zadatak \"" + task.title + "\"?")
+                .setPositiveButton("Obriši", (dialog, which) -> {
+                    db.taskDao().deleteTask(task);
+                    loadTasks();
+                    Toast.makeText(this, "Zadatak obrisan", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }

@@ -45,28 +45,41 @@ public class RegisterActivity extends AppCompatActivity {
             });
         }
 
-        btnSave.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
-            if (name.isEmpty()) {
-                Toast.makeText(this, "Unesite ime!", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (btnSave != null) {
+            btnSave.setOnClickListener(v -> {
+                String name = etName != null ? etName.getText().toString().trim() : "";
+                if (name.isEmpty()) {
+                    Toast.makeText(this, "Unesite ime!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            boolean isParent = rbParent != null && rbParent.isChecked();
-            String role = isParent ? "PARENT" : "CHILD";
+                boolean isParent = rbParent != null && rbParent.isChecked();
+                String role = isParent ? "PARENT" : "CHILD";
+                String familyCode = "HERO1234"; // Možeš kasnije dodati polje za unos koda porodice
 
-            // Pamćenje sesije u SharedPreferences
-            SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt("user_id", 1);
-            editor.putString("user_name", name);
-            editor.putString("user_role", role);
-            editor.apply();
+                // Spremanje u SharedPreferences
+                SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt("user_id", 1);
+                editor.putString("user_name", name);
+                editor.putString("user_role", role);
+                editor.putString("family_code", familyCode);
+                editor.apply();
 
-            // UVIJEK otvara tvoj originalni, dobri MainActivity Dashboard
-            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        });
+                // PAMETNO PREUSMJERAVANJE NA OSNOVU ULOGE
+                Intent intent;
+                if (isParent) {
+                    // Ako je roditelj, vodimo ga na roditeljski dashboard
+                    intent = new Intent(RegisterActivity.this, ParentDashboardActivity.class);
+                } else {
+                    // Ako je dijete, vodimo ga na njegov MainActivity dashboard
+                    intent = new Intent(RegisterActivity.this, MainActivity.class);
+                }
+
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            });
+        }
     }
 }

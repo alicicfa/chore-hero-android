@@ -51,14 +51,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            adapter = new TaskAdapter(taskList, this);
+            // PROMJENA OVDJE: Proslijeđujemo 'false' jer je ovo dječiji ekran
+            adapter = new TaskAdapter(taskList, this, false);
             recyclerView.setAdapter(adapter);
         }
 
         loadTasks();
 
+        // PROMJENA OVDJE: Potpuno sakrivamo plus dugme za dodavanje zadataka na dječijem ekranu
         if (fabAddTask != null) {
-            fabAddTask.setOnClickListener(v -> showAddTaskDialog());
+            fabAddTask.setVisibility(View.GONE);
         }
 
         if (btnLogout != null) {
@@ -101,41 +103,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         }
     }
 
-    private void showAddTaskDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null);
-        builder.setView(dialogView);
-
-        EditText etTitle = dialogView.findViewById(R.id.etDialogTitle);
-        EditText etTime = dialogView.findViewById(R.id.etDialogTime);
-        EditText etPoints = dialogView.findViewById(R.id.etDialogPoints);
-
-        builder.setPositiveButton("Sačuvaj", (dialog, which) -> {
-            String title = etTitle != null ? etTitle.getText().toString().trim() : "";
-            String time = etTime != null ? etTime.getText().toString().trim() : "20:00";
-            String pointsStr = etPoints != null ? etPoints.getText().toString().trim() : "5";
-
-            if (title.isEmpty()) {
-                Toast.makeText(this, "Unesite naziv zadatka!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            int points = 5;
-            try {
-                points = Integer.parseInt(pointsStr);
-            } catch (NumberFormatException ignored) {}
-
-            Task newTask = new Task(title, time, points, false, currentUserId, familyCode);
-            db.taskDao().insertTask(newTask);
-
-            loadTasks();
-            Toast.makeText(this, "Zadatak dodan!", Toast.LENGTH_SHORT).show();
-        });
-
-        builder.setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss());
-        builder.create().show();
-    }
-
     // --- Implementation of TaskAdapter.OnTaskClickListener ---
 
     @Override
@@ -145,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     public void onCheckClick(Task task) {
+        // Dijete može da mijenja status zadatka (da ga prekriži/završi)
         task.isCompleted = !task.isCompleted;
         db.taskDao().updateTask(task);
         loadTasks();
@@ -152,58 +120,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     public void onEditClick(Task task) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null);
-        builder.setView(dialogView);
-
-        EditText etTitle = dialogView.findViewById(R.id.etDialogTitle);
-        EditText etTime = dialogView.findViewById(R.id.etDialogTime);
-        EditText etPoints = dialogView.findViewById(R.id.etDialogPoints);
-
-        // Popuni dijaloški prozor postojećim vrijednostima
-        if (etTitle != null) etTitle.setText(task.title);
-        if (etTime != null) etTime.setText(task.time);
-        if (etPoints != null) etPoints.setText(String.valueOf(task.points));
-
-        builder.setPositiveButton("Izmjeni", (dialog, which) -> {
-            String title = etTitle != null ? etTitle.getText().toString().trim() : task.title;
-            String time = etTime != null ? etTime.getText().toString().trim() : task.time;
-            String pointsStr = etPoints != null ? etPoints.getText().toString().trim() : String.valueOf(task.points);
-
-            if (title.isEmpty()) {
-                Toast.makeText(this, "Naziv ne može biti prazan!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            int points = task.points;
-            try {
-                points = Integer.parseInt(pointsStr);
-            } catch (NumberFormatException ignored) {}
-
-            task.title = title;
-            task.time = time;
-            task.points = points;
-
-            db.taskDao().updateTask(task);
-            loadTasks();
-            Toast.makeText(this, "Zadatak ažuriran!", Toast.LENGTH_SHORT).show();
-        });
-
-        builder.setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss());
-        builder.create().show();
+        // Kod djeteta je ovo onemogućeno u adapteru, ali ostavljamo prazno zbog implementacije interfejsa
     }
 
     @Override
     public void onDeleteClick(Task task) {
-        new AlertDialog.Builder(this)
-                .setTitle("Brisanje zadatka")
-                .setMessage("Da li ste sigurni da želite obrisati zadatak \"" + task.title + "\"?")
-                .setPositiveButton("Obriši", (dialog, which) -> {
-                    db.taskDao().deleteTask(task);
-                    loadTasks();
-                    Toast.makeText(this, "Zadatak obrisan", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss())
-                .show();
+        // Kod djeteta je ovo onemogućeno u adapteru, ali ostavljamo prazno zbog implementacije interfejsa
     }
 }

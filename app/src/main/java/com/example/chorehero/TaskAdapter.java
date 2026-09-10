@@ -17,23 +17,31 @@ import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
+    private List<Task> taskList;
+    private OnTaskClickListener listener;
+    private boolean isParentView;
+
     public interface OnTaskClickListener {
         void onTaskClick(Task task);
         void onCheckClick(Task task);
-        void onEditClick(Task task); // Dodata metoda za edit
+        void onEditClick(Task task);
         void onDeleteClick(Task task);
     }
 
-    private List<Task> taskList;
-    private final OnTaskClickListener listener;
+    public TaskAdapter(List<Task> taskList, OnTaskClickListener listener, boolean isParentView) {
+        this.taskList = taskList;
+        this.listener = listener;
+        this.isParentView = isParentView;
+    }
 
     public TaskAdapter(List<Task> taskList, OnTaskClickListener listener) {
         this.taskList = taskList;
         this.listener = listener;
+        this.isParentView = false;
     }
 
-    public void setTasks(List<Task> tasks) {
-        this.taskList = tasks;
+    public void setTasks(List<Task> taskList) {
+        this.taskList = taskList;
         notifyDataSetChanged();
     }
 
@@ -47,40 +55,89 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = taskList.get(position);
+        if (holder.tvTitle != null) holder.tvTitle.setText(task.title);
+        if (holder.tvTime != null) holder.tvTime.setText(task.time);
+        if (holder.tvPoints != null) holder.tvPoints.setText("+" + task.points + "b");
 
-        holder.tvTitle.setText(task.title);
-        holder.tvTime.setText(task.time);
-        holder.tvPoints.setText("+" + task.points + "b");
+        // Prikaz statusa zadatka i vizuelni efekti za završene/nezavršene zadatke
+        if (holder.ivCheck != null) {
+            holder.ivCheck.setVisibility(View.VISIBLE);
 
-        if (task.isCompleted) {
-            holder.btnCheck.setImageResource(R.drawable.ic_checkbox_on);
-            holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            holder.tvTitle.setTextColor(Color.parseColor("#94A3B8"));
+            if (task.isCompleted) {
+                holder.ivCheck.setImageResource(R.drawable.ic_checkbox_on);
+                holder.ivCheck.setAlpha(1.0f); // Puna vidljivost kad je završeno
 
-            holder.cardTask.setAlpha(0.7f);
-            holder.cardTask.setCardBackgroundColor(Color.parseColor("#F1F5F9"));
-            holder.cardTask.setStrokeColor(Color.parseColor("#CBD5E1"));
+                // Pastelno zelena pozadina i rub za završen zadatak
+                if (holder.cardViewContainer != null) {
+                    holder.cardViewContainer.setCardBackgroundColor(Color.parseColor("#F0FDF4"));
+                    holder.cardViewContainer.setStrokeColor(Color.parseColor("#86EFAC"));
+                }
+                if (holder.tvTitle != null) {
+                    holder.tvTitle.setTextColor(Color.parseColor("#94A3B8")); // Prigušeniji tekst
+                    holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                }
+            } else {
+                holder.ivCheck.setImageResource(R.drawable.ic_checkbox_off);
+                if (isParentView) {
+                    holder.ivCheck.setAlpha(0.4f); // Kod roditelja nezavršeni krug je malo prigušen
+                } else {
+                    holder.ivCheck.setAlpha(1.0f);
+                }
 
-            holder.tvPoints.setTextColor(Color.parseColor("#64748B"));
-            holder.tvPoints.setBackgroundColor(Color.parseColor("#E2E8F0"));
-        } else {
-            holder.btnCheck.setImageResource(R.drawable.ic_checkbox_off);
-            holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-            holder.tvTitle.setTextColor(Color.parseColor("#0F172A"));
+                // Standardna bijela pozadina i mint rub za nezavršene zadatke
+                if (holder.cardViewContainer != null) {
+                    holder.cardViewContainer.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+                    holder.cardViewContainer.setStrokeColor(Color.parseColor("#2EC4B6"));
+                }
+                if (holder.tvTitle != null) {
+                    holder.tvTitle.setTextColor(Color.parseColor("#0F172A"));
+                    holder.tvTitle.setPaintFlags(holder.tvTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                }
+            }
 
-            holder.cardTask.setAlpha(1.0f);
-            holder.cardTask.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
-            holder.cardTask.setStrokeColor(Color.parseColor("#2EC4B6"));
-
-            holder.tvPoints.setTextColor(Color.parseColor("#0D9488"));
-            holder.tvPoints.setBackgroundColor(Color.parseColor("#E6FFFA"));
+            // Ako je roditeljski ekran, potpuno gasimo klik na kvačicu
+            if (isParentView) {
+                holder.ivCheck.setClickable(false);
+                holder.ivCheck.setEnabled(false);
+                holder.ivCheck.setOnClickListener(null);
+            } else {
+                holder.ivCheck.setClickable(true);
+                holder.ivCheck.setEnabled(true);
+                holder.ivCheck.setOnClickListener(v -> {
+                    if (listener != null) listener.onCheckClick(task);
+                });
+            }
         }
 
-        // Listeneri
-        holder.btnCheck.setOnClickListener(v -> listener.onCheckClick(task));
-        holder.btnEdit.setOnClickListener(v -> listener.onEditClick(task)); // Edit klik
-        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(task));
-        holder.itemView.setOnClickListener(v -> listener.onTaskClick(task));
+        // KONTROLA VIDLJIVOSTI: Uređivanje i brisanje vidljivi samo kod roditelja
+        if (isParentView) {
+            if (holder.btnEdit != null) {
+                holder.btnEdit.setVisibility(View.VISIBLE);
+                holder.btnEdit.setOnClickListener(v -> {
+                    if (listener != null) listener.onEditClick(task);
+                });
+            }
+            if (holder.btnDelete != null) {
+                holder.btnDelete.setVisibility(View.VISIBLE);
+                holder.btnDelete.setOnClickListener(v -> {
+                    if (listener != null) listener.onDeleteClick(task);
+                });
+            }
+        } else {
+            // Kod djeteta potpuno sakrivamo olovku i kantu za smeće
+            if (holder.btnEdit != null) {
+                holder.btnEdit.setVisibility(View.GONE);
+                holder.btnEdit.setOnClickListener(null);
+            }
+            if (holder.btnDelete != null) {
+                holder.btnDelete.setVisibility(View.GONE);
+                holder.btnDelete.setOnClickListener(null);
+            }
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onTaskClick(task);
+        });
     }
 
     @Override
@@ -89,19 +146,20 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
     static class TaskViewHolder extends RecyclerView.ViewHolder {
-        MaterialCardView cardTask;
-        TextView tvTitle, tvPoints, tvTime;
-        ImageView btnCheck, btnEdit, btnDelete;
+        TextView tvTitle, tvTime, tvPoints;
+        ImageView ivCheck;
+        View btnEdit, btnDelete;
+        MaterialCardView cardViewContainer;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardTask = itemView.findViewById(R.id.cardTask);
-            btnCheck = itemView.findViewById(R.id.btnCheckTask);
-            tvTitle = itemView.findViewById(R.id.tvTaskTitle);
-            tvPoints = itemView.findViewById(R.id.tvTaskPoints);
-            tvTime = itemView.findViewById(R.id.tvTaskTime);
-            btnEdit = itemView.findViewById(R.id.btnEditTask);
-            btnDelete = itemView.findViewById(R.id.btnDeleteTask);
+            tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvTime = itemView.findViewById(R.id.tvTime);
+            tvPoints = itemView.findViewById(R.id.tvPoints);
+            ivCheck = itemView.findViewById(R.id.ivCheck);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
+            cardViewContainer = itemView.findViewById(R.id.cardViewContainer);
         }
     }
 }

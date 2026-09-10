@@ -1,58 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    android:padding="20dp"
-    tools:ignore="HardcodedText">
+    android:background="#F8FAFC"
+    android:fitsSystemWindows="true"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
 
-    <LinearLayout
-        android:id="@+id/headerLayout"
+    <!-- Header -->
+    <RelativeLayout
+        android:id="@+id/headerParent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/tvWelcomeParent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PARENT DASHBOARD"
-            android:textColor="#5E35B1"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Lista zadataka"
-            android:textColor="#1A1A1A"
-            android:textSize="26sp"
+            android:layout_centerInParent="true"
+            android:text="ChoreHero"
+            android:textColor="#0F172A"
+            android:textSize="20sp"
             android:textStyle="bold" />
-    </LinearLayout>
 
+        <Button
+            android:id="@+id/btnLogoutParent"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:backgroundTint="#E2E8F0"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="Odjavi se"
+            android:textColor="#475569"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tvParentHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headerParent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:text="Zadaci u porodici"
+        android:textColor="#64748B"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <!-- Lista zadataka za roditelja -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvTasks"
+        android:id="@+id/rvParentTasks"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/fabAddTask"
-        android:layout_below="@id/headerLayout"
-        android:layout_marginTop="20dp"
+        android:layout_above="@id/fabAddParentTask"
+        android:layout_below="@id/tvParentHeader"
+        android:layout_marginTop="12dp"
         android:clipToPadding="false"
-        android:paddingBottom="16dp" />
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="80dp" />
 
+    <!-- FAB Plus dugme za dodavanje zadatka -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddTask"
+        android:id="@+id/fabAddParentTask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="12dp"
         android:contentDescription="Dodaj zadatak"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="#5E35B1"
+        app:backgroundTint="#2EC4B6"
         app:tint="#FFFFFF" />
 
 </RelativeLayout>
