@@ -68,7 +68,7 @@ public class WeeklyReviewActivity extends AppCompatActivity {
                     TextView tvTaskItem = new TextView(this);
                     String statusIcon = task.isCompleted ? "✅ " : "⏳ ";
                     tvTaskItem.setText(statusIcon + task.title + " (+" + task.points + "b)");
-                    tvTaskItem.setTextSize(14); // Ispravljeno sa 13sp na 14
+                    tvTaskItem.setTextSize(14);
                     tvTaskItem.setTextColor(task.isCompleted ? Color.parseColor("#94A3B8") : Color.parseColor("#334155"));
                     containerDayTasks.addView(tvTaskItem);
                 }
@@ -77,7 +77,7 @@ public class WeeklyReviewActivity extends AppCompatActivity {
             if (totalCount == 0) {
                 TextView tvEmpty = new TextView(this);
                 tvEmpty.setText("Nema zadataka za ovaj dan.");
-                tvEmpty.setTextSize(14); // Ispravljeno sa 13sp na 14
+                tvEmpty.setTextSize(14);
                 tvEmpty.setTextColor(Color.parseColor("#94A3B8"));
                 containerDayTasks.addView(tvEmpty);
                 tvDayPoints.setText("0 bodova");

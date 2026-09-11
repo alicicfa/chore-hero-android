@@ -104,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         if (menuWeekly != null) {
             menuWeekly.setOnClickListener(v -> {
-                Toast.makeText(this, "Sedmični pregled - U izradi!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, WeeklyReviewActivity.class);
+                startActivity(intent);
                 if (drawerLayout != null) drawerLayout.closeDrawers();
             });
         }
@@ -126,15 +127,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     private void loadTasks() {
         if (db != null && db.taskDao() != null) {
-            // Provjera šta tačno sesija vuče
-            Log.d("DEBUG_CHOREHERO", "Trenutni familyCode djeteta je: " + familyCode);
-            Log.d("DEBUG_CHOREHERO", "Trenutni user_id djeteta je: " + currentUserId);
-
             taskList.clear();
             List<Task> fromDb = db.taskDao().getTasksForFamily(familyCode);
-
-            // Provjera koliko je zadataka baza vratila
-            Log.d("DEBUG_CHOREHERO", "Broj pronađenih zadataka za ovaj kod: " + (fromDb != null ? fromDb.size() : 0));
 
             if (fromDb != null) {
                 taskList.addAll(fromDb);
