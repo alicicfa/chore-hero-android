@@ -75,7 +75,13 @@ public class LoginActivity extends AppCompatActivity {
             editor.putInt("user_id", user.id);
             editor.putString("user_name", user.name);
             editor.putString("user_role", user.role);
-            editor.putString("user_avatar", user.avatar);
+
+            // Osiguravamo da se avatar ispravno povuče i spasi
+            String avatarVal = user.avatar;
+            if (avatarVal == null || avatarVal.trim().isEmpty()) {
+                avatarVal = "boy";
+            }
+            editor.putString("user_avatar", avatarVal);
             editor.apply();
 
             Intent intent;

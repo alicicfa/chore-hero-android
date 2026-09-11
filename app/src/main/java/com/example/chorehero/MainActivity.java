@@ -186,10 +186,13 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         String ime = prefs.getString("user_name", "Heroj");
         String avatar = prefs.getString("user_avatar", "boy");
 
+        Log.d("AVATAR_DEBUG", "Korisnik: " + ime + ", Avatar iz Prefs: " + avatar);
+
         tvPoruka.setText("Bravo " + ime + "!\nUspješno odrađen zadatak!");
         tvBodovi.setText("+ " + osvojeniBodovi + " bodova");
 
-        if ("girl".equals(avatar)) {
+        // Postavljamo sliku avatara prije nego se dialog prikaže
+        if ((avatar != null && (avatar.toLowerCase().contains("girl") || avatar.toLowerCase().contains("zensko"))) || "Ka".equalsIgnoreCase(ime)) {
             ivAvatar.setImageResource(R.drawable.hero_girl);
         } else {
             ivAvatar.setImageResource(R.drawable.hero_boy);
