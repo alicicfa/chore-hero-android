@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private int currentUserId = 1;
     private String familyCode = "HERO1234";
     private ExecutorService executorService;
+    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         db = AppDatabase.getInstance(this);
         executorService = Executors.newSingleThreadExecutor();
 
-        SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
+        prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
         currentUserId = prefs.getInt("user_id", 1);
         familyCode = prefs.getString("family_code", "HERO1234");
 
@@ -115,7 +116,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         if (menuRewards != null) {
             menuRewards.setOnClickListener(v -> {
-                Toast.makeText(this, "Sistem nagrada - U izradi!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, RewardsActivity.class);
+                startActivity(intent);
                 if (drawerLayout != null) drawerLayout.closeDrawers();
             });
         }
@@ -149,14 +151,20 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
     private void calculatePointsFromList() {
-        int totalPoints = 0;
+        int earnedPoints = 0;
         for (Task t : taskList) {
             if (t.isCompleted) {
-                totalPoints += t.points;
+                earnedPoints += t.points;
             }
         }
+
+        // Oduzmi bodove koji su potrošeni na nagrade
+        int spentPoints = prefs.getInt("spent_points_" + familyCode, 0);
+        int availablePoints = earnedPoints - spentPoints;
+        if (availablePoints < 0) availablePoints = 0;
+
         if (tvTotalPoints != null) {
-            tvTotalPoints.setText(totalPoints + " PTS");
+            tvTotalPoints.setText(availablePoints + " PTS");
         }
     }
 
@@ -207,7 +215,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         TextView tvPoruka = dialog.findViewById(R.id.tvBravoPoruka);
         TextView tvBodovi = dialog.findViewById(R.id.tvBravoBodovi);
 
-        SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
         String ime = prefs.getString("user_name", "Heroj");
         String avatar = prefs.getString("user_avatar", "boy");
 

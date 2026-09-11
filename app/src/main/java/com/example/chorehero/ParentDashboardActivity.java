@@ -103,7 +103,8 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
 
         if (menuRewards != null) {
             menuRewards.setOnClickListener(v -> {
-                Toast.makeText(this, "Sistem nagrada - U izradi!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(ParentDashboardActivity.this, RewardsActivity.class);
+                startActivity(intent);
                 if (drawerLayout != null) drawerLayout.closeDrawers();
             });
         }
