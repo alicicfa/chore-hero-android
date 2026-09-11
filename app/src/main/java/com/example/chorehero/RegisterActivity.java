@@ -1,5 +1,6 @@
 package com.example.chorehero;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -21,7 +22,7 @@ public class RegisterActivity extends AppCompatActivity {
     private RadioGroup rgRole;
     private RadioButton rbParent;
     private LinearLayout layoutAvatarSelection;
-    private ImageView ivAvatarBoy, ivAvatarGirl;
+    private ImageView ivAvatarBoy, ivAvatarGirl, btnAppInfo;
     private Button btnSave;
     private TextView tvGoToLogin;
     private AppDatabase db;
@@ -43,6 +44,12 @@ public class RegisterActivity extends AppCompatActivity {
         ivAvatarGirl = findViewById(R.id.ivAvatarGirl);
         btnSave = findViewById(R.id.btnSaveProfile);
         tvGoToLogin = findViewById(R.id.tvGoToLogin);
+        btnAppInfo = findViewById(R.id.btnAppInfo);
+
+        // Klik na info ikonicu otvara prozor sa uputstvom i opisom aplikacije
+        if (btnAppInfo != null) {
+            btnAppInfo.setOnClickListener(v -> showAppInfoDialog());
+        }
 
         rgRole.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rbParent) {
@@ -89,8 +96,6 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            // Upisujemo korisnika sa izabranim avatarom ("boy" ili "girl")
-            // Umjesto starog poziva, ovako treba izgledati u RegisterActivity.java:
             User newUser = new User(name, pin, role, "HERO1234", 0, selectedAvatar);
             db.userDao().insertUser(newUser);
 
@@ -106,5 +111,28 @@ public class RegisterActivity extends AppCompatActivity {
                 finish();
             });
         }
+    }
+
+    private void showAppInfoDialog() {
+        String infoMessage =
+                "Vizija i ideja:\n" +
+                "Vizija aplikacije je da kroz igru motiviše djecu na izvršavanje svakodnevnih obaveza (učenje, spremanje sobe, higijena i sl.), pretvarajući rutinske zadatke u uspješno razvijanje pozitivnih navika i zdravih rutina.\n\n" +
+                "Dobna granica i namjena:\n" +
+                "• Aplikacija je namijenjena djeci uzrasta 5-11 godina.\n" +
+                "• Prilagođena je za korištenje na jednom zajedničkom uređaju (telefon ili tablet) gdje roditelj i dijete preuzimaju uloge.\n\n" +
+                "Kako funkcioniše:\n" +
+                "• Roditeljski interfejs: Upravljanje zadacima, dodavanje i brisanje nagrada, te uvid u preuzeto.\n" +
+                "• Dječiji profil: Sakupljanje bodova kroz zadatke, otključavanje nagrada i personalizirani avatari.\n\n" +
+                "Uputstvo za upotrebu:\n" +
+                "1. Prvim pokretanjem kreirajte profil (odaberite ulogu i kod).\n" +
+                "2. Nakon uspješne registracije, svaki naredni put je dovoljno samo da se prijavite u aplikaciju.\n" +
+                "3. Djeca na ekranu vide zadatke i klikom na kvačicu osvajaju bodove za nagrade.\n\n" +
+                "Radujemo se ukoliko našu aplikaciju odaberete za izgradnju pozitivnih navika kod djece! ";
+
+        new AlertDialog.Builder(this)
+                .setTitle("O aplikaciji ChoreHero")
+                .setMessage(infoMessage)
+                .setPositiveButton("Zatvori", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }
