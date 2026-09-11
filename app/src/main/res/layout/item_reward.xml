@@ -43,6 +43,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Dugme za preuzimanje (koristi ga dijete, a roditelj vidi status "Preuzeta nagrada") -->
         <Button
             android:id="@+id/btnClaimReward"
             android:layout_width="wrap_content"
@@ -50,6 +51,18 @@
             android:backgroundTint="#2EC4B6"
             android:text="Preuzmi"
             android:textColor="#FFFFFF" />
+
+        <!-- Dugme za brisanje nagrade (vidljivo samo roditelju) -->
+        <ImageButton
+            android:id="@+id/btnDeleteReward"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Obriši nagradu"
+            android:src="@android:drawable/ic_menu_delete"
+            app:tint="#666565"
+            android:visibility="gone" />
 
     </LinearLayout>
 

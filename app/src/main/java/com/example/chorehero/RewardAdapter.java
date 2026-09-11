@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,6 +24,7 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
 
     public interface OnRewardClickListener {
         void onClaimClick(Reward reward);
+        void onDeleteClick(Reward reward);
     }
 
     public RewardAdapter(List<Reward> rewardList, OnRewardClickListener listener) {
@@ -50,23 +52,54 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
 
         Context context = holder.itemView.getContext();
         SharedPreferences prefs = context.getSharedPreferences("ChoreHeroPrefs", Context.MODE_PRIVATE);
+        String userRole = prefs.getString("user_role", "parent");
         Set<String> claimedRewards = prefs.getStringSet("claimed_rewards", new HashSet<>());
 
-        if (claimedRewards.contains(reward.title)) {
+        boolean isClaimed = claimedRewards.contains(reward.title);
+
+        if ("parent".equalsIgnoreCase(userRole)) {
+            // RODITELJ: Nema gumba "Preuzmi", ali ima dugme za brisanje i status ako je preuzeta
             if (holder.btnClaimReward != null) {
-                holder.btnClaimReward.setText("Preuzeto");
-                holder.btnClaimReward.setBackgroundColor(Color.parseColor("#B0BEC5")); // Siva nijansa
-                holder.btnClaimReward.setEnabled(false);
-                holder.btnClaimReward.setOnClickListener(null);
+                if (isClaimed) {
+                    holder.btnClaimReward.setText("Preuzeta nagrada");
+                    holder.btnClaimReward.setBackgroundColor(Color.parseColor("#B0BEC5")); // siva
+                    holder.btnClaimReward.setEnabled(false);
+                    holder.btnClaimReward.setVisibility(View.VISIBLE);
+                } else {
+                    // Ako nije preuzeta, roditelju uopšte ne treba gumb "Preuzmi"
+                    holder.btnClaimReward.setVisibility(View.GONE);
+                }
             }
-        } else {
-            if (holder.btnClaimReward != null) {
-                holder.btnClaimReward.setText("Preuzmi");
-                holder.btnClaimReward.setBackgroundColor(Color.parseColor("#26A69A")); // Tvoja tirkizna boja
-                holder.btnClaimReward.setEnabled(true);
-                holder.btnClaimReward.setOnClickListener(v -> {
-                    if (listener != null) listener.onClaimClick(reward);
+
+            // Prikazujemo dugme za brisanje roditelju
+            if (holder.btnDeleteReward != null) {
+                holder.btnDeleteReward.setVisibility(View.VISIBLE);
+                holder.btnDeleteReward.setOnClickListener(v -> {
+                    if (listener != null) listener.onDeleteClick(reward);
                 });
+            }
+
+        } else {
+            // DIJETE: Ima gumb "Preuzmi", nema dugme za brisanje
+            if (holder.btnDeleteReward != null) {
+                holder.btnDeleteReward.setVisibility(View.GONE);
+            }
+
+            if (holder.btnClaimReward != null) {
+                holder.btnClaimReward.setVisibility(View.VISIBLE);
+                if (isClaimed) {
+                    holder.btnClaimReward.setText("Preuzeto");
+                    holder.btnClaimReward.setBackgroundColor(Color.parseColor("#B0BEC5"));
+                    holder.btnClaimReward.setEnabled(false);
+                    holder.btnClaimReward.setOnClickListener(null);
+                } else {
+                    holder.btnClaimReward.setText("Preuzmi");
+                    holder.btnClaimReward.setBackgroundColor(Color.parseColor("#26A69A"));
+                    holder.btnClaimReward.setEnabled(true);
+                    holder.btnClaimReward.setOnClickListener(v -> {
+                        if (listener != null) listener.onClaimClick(reward);
+                    });
+                }
             }
         }
     }
@@ -79,12 +112,14 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
     static class RewardViewHolder extends RecyclerView.ViewHolder {
         TextView tvRewardTitle, tvRewardCost;
         Button btnClaimReward;
+        ImageButton btnDeleteReward; // Dodajemo u ViewHolder ako postoji u XML-u, ili ćemo srediti xml
 
         public RewardViewHolder(@NonNull View itemView) {
             super(itemView);
             tvRewardTitle = itemView.findViewById(R.id.tvRewardTitle);
             tvRewardCost = itemView.findViewById(R.id.tvRewardCost);
             btnClaimReward = itemView.findViewById(R.id.btnClaimReward);
+            btnDeleteReward = itemView.findViewById(R.id.btnDeleteReward); // Provjeri da li je ovo ID u item_reward.xml
         }
     }
 }

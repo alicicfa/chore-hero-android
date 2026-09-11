@@ -8,7 +8,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -108,7 +107,6 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
                 }
             }
 
-            // zarada minus potrošeno
             int spentPoints = prefs.getInt("spent_points_" + familyCode, 0);
             int availablePoints = earnedPoints - spentPoints;
             if (availablePoints < 0) availablePoints = 0;
@@ -182,23 +180,19 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
 
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (finalAvailablePoints >= reward.pointsCost) {
-                    // Provjera da li je već preuzeta
                     Set<String> claimedRewards = prefs.getStringSet("claimed_rewards", new HashSet<>());
                     if (claimedRewards.contains(reward.title)) {
                         Toast.makeText(this, "Ova nagrada je već preuzeta!", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    // 1. Dodaj trošak u potrošene bodove
                     int newSpentPoints = spentPoints + reward.pointsCost;
                     prefs.edit().putInt("spent_points_" + familyCode, newSpentPoints).apply();
 
-                    // 2. Spremi nagradu u preuzete
                     Set<String> newClaimed = new HashSet<>(claimedRewards);
                     newClaimed.add(reward.title);
                     prefs.edit().putStringSet("claimed_rewards", newClaimed).apply();
 
-                    // 3. Ažuriraj prikaz bodova na vrhu i adaptera
                     int remainingPoints = finalEarnedPoints - newSpentPoints;
                     if (tvTotalPointsRewards != null) {
                         tvTotalPointsRewards.setText(remainingPoints + " PTS");
@@ -207,7 +201,6 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
                         adapter.notifyDataSetChanged();
                     }
 
-                    // 4. Prikaži avatar čestitku
                     prikaziAvatarNagrade(reward.title);
 
                 } else {
@@ -215,6 +208,25 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
                 }
             });
         });
+    }
+
+    @Override
+    public void onDeleteClick(Reward reward) {
+        // Brisanje nagrade za roditelja
+        new AlertDialog.Builder(this)
+                .setTitle("Obriši nagradu")
+                .setMessage("Da li ste sigurni da želite obrisati nagradu \"" + reward.title + "\"?")
+                .setPositiveButton("Da", (dialog, which) -> {
+                    executorService.execute(() -> {
+                        db.rewardDao().deleteReward(reward);
+                        loadRewards();
+                        new Handler(Looper.getMainLooper()).post(() ->
+                                Toast.makeText(this, "Nagrada obrisana.", Toast.LENGTH_SHORT).show()
+                        );
+                    });
+                })
+                .setNegativeButton("Ne", null)
+                .show();
     }
 
     private void prikaziAvatarNagrade(String nazivNagrade) {
