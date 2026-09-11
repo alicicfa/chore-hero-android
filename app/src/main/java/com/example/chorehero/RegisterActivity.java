@@ -1,14 +1,16 @@
 package com.example.chorehero;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,65 +21,90 @@ public class RegisterActivity extends AppCompatActivity {
     private RadioGroup rgRole;
     private RadioButton rbParent;
     private LinearLayout layoutAvatarSelection;
+    private ImageView ivAvatarBoy, ivAvatarGirl;
     private Button btnSave;
+    private TextView tvGoToLogin;
+    private AppDatabase db;
+    private String selectedAvatar = "boy";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        db = AppDatabase.getInstance(this);
+
         etName = findViewById(R.id.etName);
         etPin = findViewById(R.id.etPin);
         rgRole = findViewById(R.id.rgRole);
         rbParent = findViewById(R.id.rbParent);
         layoutAvatarSelection = findViewById(R.id.layoutAvatarSelection);
+        ivAvatarBoy = findViewById(R.id.ivAvatarBoy);
+        ivAvatarGirl = findViewById(R.id.ivAvatarGirl);
         btnSave = findViewById(R.id.btnSaveProfile);
+        tvGoToLogin = findViewById(R.id.tvGoToLogin);
 
-        if (rgRole != null) {
-            rgRole.setOnCheckedChangeListener((group, checkedId) -> {
-                if (checkedId == R.id.rbParent) {
-                    if (etPin != null) etPin.setVisibility(View.VISIBLE);
-                    if (layoutAvatarSelection != null) layoutAvatarSelection.setVisibility(View.GONE);
-                } else {
-                    if (etPin != null) etPin.setVisibility(View.GONE);
-                    if (layoutAvatarSelection != null) layoutAvatarSelection.setVisibility(View.VISIBLE);
-                }
-            });
-        }
+        rgRole.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rbParent) {
+                if (etPin != null) etPin.setVisibility(View.VISIBLE);
+                if (layoutAvatarSelection != null) layoutAvatarSelection.setVisibility(View.GONE);
+            } else {
+                if (etPin != null) etPin.setVisibility(View.GONE);
+                if (layoutAvatarSelection != null) layoutAvatarSelection.setVisibility(View.VISIBLE);
+            }
+        });
 
-        if (btnSave != null) {
-            btnSave.setOnClickListener(v -> {
-                String name = etName != null ? etName.getText().toString().trim() : "";
-                if (name.isEmpty()) {
-                    Toast.makeText(this, "Unesite ime!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+        ivAvatarBoy.setOnClickListener(v -> {
+            selectedAvatar = "boy";
+            ivAvatarBoy.setBackgroundColor(Color.parseColor("#5E35B1"));
+            ivAvatarGirl.setBackgroundColor(Color.parseColor("#E0E0E0"));
+        });
 
-                boolean isParent = rbParent != null && rbParent.isChecked();
-                String role = isParent ? "PARENT" : "CHILD";
-                String familyCode = "HERO1234"; // Možeš kasnije dodati polje za unos koda porodice
+        ivAvatarGirl.setOnClickListener(v -> {
+            selectedAvatar = "girl";
+            ivAvatarGirl.setBackgroundColor(Color.parseColor("#5E35B1"));
+            ivAvatarBoy.setBackgroundColor(Color.parseColor("#E0E0E0"));
+        });
 
-                // Spremanje u SharedPreferences
-                SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt("user_id", 1);
-                editor.putString("user_name", name);
-                editor.putString("user_role", role);
-                editor.putString("family_code", familyCode);
-                editor.apply();
+        // REGISTRACIJA - SAMO UPIS U BAZU
+        btnSave.setOnClickListener(v -> {
+            String name = etName.getText().toString().trim();
+            String pin = etPin.getText().toString().trim();
 
-                // PAMETNO PREUSMJERAVANJE NA OSNOVU ULOGE
-                Intent intent;
-                if (isParent) {
-                    // Ako je roditelj, vodimo ga na roditeljski dashboard
-                    intent = new Intent(RegisterActivity.this, ParentDashboardActivity.class);
-                } else {
-                    // Ako je dijete, vodimo ga na njegov MainActivity dashboard
-                    intent = new Intent(RegisterActivity.this, MainActivity.class);
-                }
+            if (name.isEmpty()) {
+                Toast.makeText(this, "Unesite ime ili nadimak!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+            boolean isParent = rbParent.isChecked();
+            String role = isParent ? "PARENT" : "CHILD";
+
+            if (isParent && (pin.isEmpty() || pin.length() < 4)) {
+                Toast.makeText(this, "Roditelj mora unijeti PIN od minimalno 4 cifre!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Provjera da li korisnik s tim imenom već postoji
+            User existing = db.userDao().login(name, isParent ? pin : "");
+            if (existing != null) {
+                Toast.makeText(this, "Korisnik sa ovim imenom već postoji! Prijavite se.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // Upis novog korisnika u bazu (Proslijeđujemo i izabrani avatar umjesto fiksnog stringa)
+            User newUser = new User(name, pin, role, selectedAvatar, 0);
+            db.userDao().insertUser(newUser);
+
+            Toast.makeText(this, "Uspješno ste se registrovali! Prijavite se.", Toast.LENGTH_LONG).show();
+
+            // Nakon registracije, prebacujemo ga na Login ekran
+            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+            finish();
+        });
+
+        if (tvGoToLogin != null) {
+            tvGoToLogin.setOnClickListener(v -> {
+                startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                 finish();
             });
         }

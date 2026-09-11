@@ -13,7 +13,7 @@ public class User {
     public String role;        // "PARENT" ili "CHILD"
     public String familyCode;  // npr. "HERO123" za spajanje porodice
     public int points;         // Ukupni bodovi (za dijete)
-
+    public String avatar;
     public User(String name, String pin, String role, String familyCode, int points) {
         this.name = name;
         this.pin = pin;
