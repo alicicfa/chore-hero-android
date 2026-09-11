@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener {
 
@@ -38,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     private int currentUserId = 1;
     private String familyCode = "HERO1234";
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         setContentView(R.layout.activity_main);
 
         db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         SharedPreferences prefs = getSharedPreferences("ChoreHeroPrefs", MODE_PRIVATE);
         currentUserId = prefs.getInt("user_id", 1);
@@ -126,25 +131,32 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     private void loadTasks() {
         if (db != null && db.taskDao() != null) {
-            taskList.clear();
-            List<Task> fromDb = db.taskDao().getTasksForFamily(familyCode);
+            executorService.execute(() -> {
+                List<Task> fromDb = db.taskDao().getTasksForFamily(familyCode);
 
-            if (fromDb != null) {
-                taskList.addAll(fromDb);
-            }
-            if (adapter != null) {
-                adapter.setTasks(taskList);
-            }
-            calculateTotalPoints();
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    taskList.clear();
+                    if (fromDb != null) {
+                        taskList.addAll(fromDb);
+                    }
+                    if (adapter != null) {
+                        adapter.setTasks(taskList);
+                    }
+                    calculatePointsFromList();
+                });
+            });
         }
     }
 
-    private void calculateTotalPoints() {
-        if (db != null && db.taskDao() != null) {
-            int total = db.taskDao().getPointsForChild(currentUserId);
-            if (tvTotalPoints != null) {
-                tvTotalPoints.setText(total + " PTS");
+    private void calculatePointsFromList() {
+        int totalPoints = 0;
+        for (Task t : taskList) {
+            if (t.isCompleted) {
+                totalPoints += t.points;
             }
+        }
+        if (tvTotalPoints != null) {
+            tvTotalPoints.setText(totalPoints + " PTS");
         }
     }
 
@@ -153,14 +165,28 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     public void onCheckClick(Task task) {
-        task.isCompleted = !task.isCompleted;
-        db.taskDao().updateTask(task);
+        executorService.execute(() -> {
+            task.isCompleted = !task.isCompleted;
+            db.taskDao().updateTask(task);
 
-        if (task.isCompleted) {
-            prikaziBravoPoruku(task.points);
-        }
+            List<Task> updatedList = db.taskDao().getTasksForFamily(familyCode);
 
-        loadTasks();
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (task.isCompleted) {
+                    prikaziBravoPoruku(task.points);
+                }
+
+                taskList.clear();
+                if (updatedList != null) {
+                    taskList.addAll(updatedList);
+                }
+                if (adapter != null) {
+                    adapter.setTasks(taskList);
+                }
+
+                calculatePointsFromList();
+            });
+        });
     }
 
     @Override
@@ -190,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         tvPoruka.setText("Bravo " + ime + "!\nUspješno odrađen zadatak!");
         tvBodovi.setText("+ " + osvojeniBodovi + " bodova");
 
-        // Provjeravamo vrijednost avatara stabilno i pouzdano
         boolean isFemale = false;
         if (avatar != null) {
             String lower = avatar.toLowerCase();
@@ -207,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         dialog.show();
 
-        new Handler().postDelayed(() -> {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
