@@ -66,7 +66,6 @@ public class RegisterActivity extends AppCompatActivity {
             ivAvatarBoy.setBackgroundColor(Color.parseColor("#E0E0E0"));
         });
 
-        // REGISTRACIJA - SAMO UPIS U BAZU
         btnSave.setOnClickListener(v -> {
             String name = etName.getText().toString().trim();
             String pin = etPin.getText().toString().trim();
@@ -84,20 +83,19 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            // Provjera da li korisnik s tim imenom već postoji
             User existing = db.userDao().login(name, isParent ? pin : "");
             if (existing != null) {
                 Toast.makeText(this, "Korisnik sa ovim imenom već postoji! Prijavite se.", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            // Upis novog korisnika u bazu (Proslijeđujemo i izabrani avatar umjesto fiksnog stringa)
-            User newUser = new User(name, pin, role, selectedAvatar, 0);
+            // Upisujemo korisnika sa izabranim avatarom ("boy" ili "girl")
+            // Umjesto starog poziva, ovako treba izgledati u RegisterActivity.java:
+            User newUser = new User(name, pin, role, "HERO1234", 0, selectedAvatar);
             db.userDao().insertUser(newUser);
 
             Toast.makeText(this, "Uspješno ste se registrovali! Prijavite se.", Toast.LENGTH_LONG).show();
 
-            // Nakon registracije, prebacujemo ga na Login ekran
             startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
             finish();
         });

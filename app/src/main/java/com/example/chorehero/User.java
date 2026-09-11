@@ -11,14 +11,17 @@ public class User {
     public String name;
     public String pin;
     public String role;        // "PARENT" ili "CHILD"
-    public String familyCode;  // npr. "HERO123" za spajanje porodice
+    public String familyCode;  // npr. "HERO1234"
     public int points;         // Ukupni bodovi (za dijete)
-    public String avatar;
-    public User(String name, String pin, String role, String familyCode, int points) {
+    public String avatar;      // "boy" ili "girl"
+
+    // Konstruktor koji prima SVE podatke uključujući i avatar
+    public User(String name, String pin, String role, String familyCode, int points, String avatar) {
         this.name = name;
         this.pin = pin;
         this.role = role;
         this.familyCode = familyCode;
         this.points = points;
+        this.avatar = avatar;
     }
 }

@@ -57,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         drawerLayout = findViewById(R.id.drawerLayout);
         btnMenu = findViewById(R.id.btnMenu);
 
-        // Podešavanje menija (Sidebara)
         if (btnMenu != null && drawerLayout != null) {
             btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
         }
@@ -66,13 +65,12 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            adapter = new TaskAdapter(taskList, this, false); // false = dječiji pogled
+            adapter = new TaskAdapter(taskList, this, false);
             recyclerView.setAdapter(adapter);
         }
 
         loadTasks();
 
-        // Sakrivamo plus dugme za dijete
         if (fabAddTask != null) {
             fabAddTask.setVisibility(View.GONE);
         }
@@ -94,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     protected void onResume() {
         super.onResume();
-        loadTasks(); // Osvježava zadatke čim se dijete vrati na ekran
+        loadTasks();
     }
 
     private void setupMenuClicks() {
@@ -119,7 +117,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         if (menuStats != null) {
             menuStats.setOnClickListener(v -> {
-                Toast.makeText(this, "Statistika - U izradi!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
+                startActivity(intent);
                 if (drawerLayout != null) drawerLayout.closeDrawers();
             });
         }
@@ -191,8 +190,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         tvPoruka.setText("Bravo " + ime + "!\nUspješno odrađen zadatak!");
         tvBodovi.setText("+ " + osvojeniBodovi + " bodova");
 
-        // Postavljamo sliku avatara prije nego se dialog prikaže
-        if ((avatar != null && (avatar.toLowerCase().contains("girl") || avatar.toLowerCase().contains("zensko"))) || "Ka".equalsIgnoreCase(ime)) {
+        // Provjeravamo vrijednost avatara stabilno i pouzdano
+        boolean isFemale = false;
+        if (avatar != null) {
+            String lower = avatar.toLowerCase();
+            if (lower.contains("girl") || lower.contains("zensko") || lower.contains("žensko") || lower.contains("female") || lower.contains("curica")) {
+                isFemale = true;
+            }
+        }
+
+        if (isFemale) {
             ivAvatar.setImageResource(R.drawable.hero_girl);
         } else {
             ivAvatar.setImageResource(R.drawable.hero_boy);
