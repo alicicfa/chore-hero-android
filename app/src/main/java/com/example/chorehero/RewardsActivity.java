@@ -77,6 +77,8 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
     @Override
     protected void onResume() {
         super.onResume();
+        // KLJUČNO: Ovdje osiguravamo da se podaci i status preuzetih nagrada
+        // osvježe svaki put kada roditelj otvori ekran nagrada!
         loadRewards();
     }
 
@@ -118,7 +120,9 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
                     rewardList.addAll(fromDb);
                 }
                 if (adapter != null) {
+                    // Ovdje osiguravamo da adapter primi novu listu i osvježi prikaz
                     adapter.setRewards(rewardList);
+                    adapter.notifyDataSetChanged();
                 }
                 if (tvTotalPointsRewards != null) {
                     tvTotalPointsRewards.setText(finalAvailablePoints + " PTS");
@@ -180,25 +184,25 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
 
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (finalAvailablePoints >= reward.pointsCost) {
-                    Set<String> claimedRewards = prefs.getStringSet("claimed_rewards", new HashSet<>());
-                    if (claimedRewards.contains(reward.title)) {
+                    if (reward.isClaimed) {
                         Toast.makeText(this, "Ova nagrada je već preuzeta!", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
+                    // Ažuriramo bodove
                     int newSpentPoints = spentPoints + reward.pointsCost;
                     prefs.edit().putInt("spent_points_" + familyCode, newSpentPoints).apply();
 
-                    Set<String> newClaimed = new HashSet<>(claimedRewards);
-                    newClaimed.add(reward.title);
-                    prefs.edit().putStringSet("claimed_rewards", newClaimed).apply();
+                    // Postavljamo da je nagrada preuzeta u bazi
+                    reward.isClaimed = true;
+                    executorService.execute(() -> {
+                        db.rewardDao().updateReward(reward);
+                        loadRewards();
+                    });
 
                     int remainingPoints = finalEarnedPoints - newSpentPoints;
                     if (tvTotalPointsRewards != null) {
                         tvTotalPointsRewards.setText(remainingPoints + " PTS");
-                    }
-                    if (adapter != null) {
-                        adapter.notifyDataSetChanged();
                     }
 
                     prikaziAvatarNagrade(reward.title);
@@ -212,7 +216,6 @@ public class RewardsActivity extends AppCompatActivity implements RewardAdapter.
 
     @Override
     public void onDeleteClick(Reward reward) {
-        // Brisanje nagrade za roditelja
         new AlertDialog.Builder(this)
                 .setTitle("Obriši nagradu")
                 .setMessage("Da li ste sigurni da želite obrisati nagradu \"" + reward.title + "\"?")

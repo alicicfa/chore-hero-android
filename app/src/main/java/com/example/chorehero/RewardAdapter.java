@@ -13,9 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardViewHolder> {
 
@@ -53,12 +51,12 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
         Context context = holder.itemView.getContext();
         SharedPreferences prefs = context.getSharedPreferences("ChoreHeroPrefs", Context.MODE_PRIVATE);
         String userRole = prefs.getString("user_role", "parent");
-        Set<String> claimedRewards = prefs.getStringSet("claimed_rewards", new HashSet<>());
 
-        boolean isClaimed = claimedRewards.contains(reward.title);
+        // PROMJENA OVDJE: Čitamo direktno iz baze, a ne iz SharedPreferences seta
+        boolean isClaimed = reward.isClaimed;
 
         if ("parent".equalsIgnoreCase(userRole)) {
-            // RODITELJ: Nema gumba "Preuzmi", ali ima dugme za brisanje i status ako je preuzeta
+            // RODITELJ: Prikazuje status ako je nagrada preuzeta i dugme za brisanje
             if (holder.btnClaimReward != null) {
                 if (isClaimed) {
                     holder.btnClaimReward.setText("Preuzeta nagrada");
@@ -66,12 +64,10 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
                     holder.btnClaimReward.setEnabled(false);
                     holder.btnClaimReward.setVisibility(View.VISIBLE);
                 } else {
-                    // Ako nije preuzeta, roditelju uopšte ne treba gumb "Preuzmi"
                     holder.btnClaimReward.setVisibility(View.GONE);
                 }
             }
 
-            // Prikazujemo dugme za brisanje roditelju
             if (holder.btnDeleteReward != null) {
                 holder.btnDeleteReward.setVisibility(View.VISIBLE);
                 holder.btnDeleteReward.setOnClickListener(v -> {
@@ -112,14 +108,14 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
     static class RewardViewHolder extends RecyclerView.ViewHolder {
         TextView tvRewardTitle, tvRewardCost;
         Button btnClaimReward;
-        ImageButton btnDeleteReward; // Dodajemo u ViewHolder ako postoji u XML-u, ili ćemo srediti xml
+        ImageButton btnDeleteReward;
 
         public RewardViewHolder(@NonNull View itemView) {
             super(itemView);
             tvRewardTitle = itemView.findViewById(R.id.tvRewardTitle);
             tvRewardCost = itemView.findViewById(R.id.tvRewardCost);
             btnClaimReward = itemView.findViewById(R.id.btnClaimReward);
-            btnDeleteReward = itemView.findViewById(R.id.btnDeleteReward); // Provjeri da li je ovo ID u item_reward.xml
+            btnDeleteReward = itemView.findViewById(R.id.btnDeleteReward);
         }
     }
 }

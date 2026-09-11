@@ -11,10 +11,12 @@ public class Reward {
     public String title;
     public int pointsCost;
     public String familyCode;
+    public boolean isClaimed;
 
     public Reward(String title, int pointsCost, String familyCode) {
         this.title = title;
         this.pointsCost = pointsCost;
         this.familyCode = familyCode;
+        this.isClaimed = false;
     }
 }
