@@ -19,6 +19,10 @@ public interface TaskDao {
     @Delete
     void deleteTask(Task task);
 
+    // Metoda za brisanje svih zadataka određene porodice
+    @Query("DELETE FROM tasks WHERE familyCode = :familyCode")
+    void deleteAllTasksForFamily(String familyCode);
+
     @Query("SELECT * FROM tasks WHERE familyCode = :familyCode ORDER BY isCompleted ASC, id DESC")
     List<Task> getTasksForFamily(String familyCode);
 

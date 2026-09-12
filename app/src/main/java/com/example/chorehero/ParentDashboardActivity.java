@@ -30,7 +30,7 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
     private List<Task> taskList = new ArrayList<>();
     private AppDatabase db;
     private Button btnLogout;
-    private FloatingActionButton fabAddTask;
+    private FloatingActionButton fabAddTask, fabDeleteAllTasks;
     private DrawerLayout drawerLayout;
     private ImageView btnMenu;
 
@@ -53,6 +53,7 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
         recyclerView = findViewById(R.id.rvTasks);
         btnLogout = findViewById(R.id.btnLogout);
         fabAddTask = findViewById(R.id.fabAddTask);
+        fabDeleteAllTasks = findViewById(R.id.fabDeleteAllTasks);
         drawerLayout = findViewById(R.id.drawerLayout);
         btnMenu = findViewById(R.id.btnMenu);
 
@@ -72,6 +73,10 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
 
         if (fabAddTask != null) {
             fabAddTask.setOnClickListener(v -> showAddTaskDialog());
+        }
+
+        if (fabDeleteAllTasks != null) {
+            fabDeleteAllTasks.setOnClickListener(v -> showDeleteAllConfirmationDialog());
         }
 
         if (btnLogout != null) {
@@ -167,6 +172,19 @@ public class ParentDashboardActivity extends AppCompatActivity implements TaskAd
 
         builder.setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss());
         builder.create().show();
+    }
+
+    private void showDeleteAllConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Brisanje svih zadataka")
+                .setMessage("Da li ste sigurni da želite obrisati sve zadatke? Ova akcija će ukloniti zadatke i sa djetetovog ekrana.")
+                .setPositiveButton("Obriši sve", (dialog, which) -> {
+                    db.taskDao().deleteAllTasksForFamily(familyCode);
+                    loadTasks();
+                    Toast.makeText(this, "Svi zadaci su obrisani.", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Otkaži", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     @Override

@@ -93,17 +93,42 @@
 
         </LinearLayout>
 
-        <!-- Plus dugme za dodavanje zadataka -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabAddTask"
+        <!-- Horizontalni LinearLayout za dugmad u donjem desnom uglu -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_margin="24dp"
-            android:backgroundTint="#2EC4B6"
-            android:contentDescription="Dodaj zadatak"
-            android:src="@android:drawable/ic_input_add"
-            app:tint="#FFFFFF" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Dugme za brisanje svih zadataka (Mint boja, bez sjene) -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabDeleteAllTasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:backgroundTint="#2EC4B6"
+                android:contentDescription="Obriši sve zadatke"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="#FFFFFF"
+                app:fabSize="mini"
+                app:elevation="0dp"
+                app:pressedTranslationZ="0dp" />
+
+            <!-- Plus dugme za dodavanje zadataka (Bez sjene) -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabAddTask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#2EC4B6"
+                android:contentDescription="Dodaj zadatak"
+                android:src="@android:drawable/ic_input_add"
+                app:tint="#FFFFFF"
+                app:elevation="0dp"
+                app:pressedTranslationZ="0dp" />
+
+        </LinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
